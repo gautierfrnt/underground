@@ -1,7 +1,9 @@
 /* Police personnalisée */
 @font-face {
-    font-family: "Gambetta";
-    src: url("./font/Gambetta-Italic.woff2") format("woff2");
+    font-family: 'Gambetta';
+    src: url('../static/fonts/Gambetta-Italic.woff2') format('woff2');
+    font-weight: 400;
+    font-style: italic;
     font-display: swap;
 }
 
@@ -54,7 +56,7 @@ body {
 
 .overlay h1 {
     font-size: clamp(3rem, 8vw, 8rem); /* Taille responsive */
-    font-family: 'Gambetta', Arial, sans-serif;
+    font-family: 'Gambetta';
     margin: 0 0 1rem 0;
     text-transform: uppercase;
     letter-spacing: 0.3rem;
@@ -71,7 +73,7 @@ body {
 
 /* Bouton "Entrer" */
 .button {
-    font-family: 'Gambetta', Arial, sans-serif;
+    font-family: 'Gambetta';
     color: #ff0000;
     padding: clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 2rem);
     font-size: clamp(0.8rem, 2vw, 1.2rem);
@@ -169,7 +171,7 @@ body {
     bottom: 20px;
     left: 20px;
     color: #ff0000;
-    font-family: 'Gambetta', Arial, sans-serif;
+    font-family: 'Gambetta';
     font-size: clamp(0.8rem, 2vw, 1.3rem);
     z-index: 100;
     text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);

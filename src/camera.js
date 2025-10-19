@@ -1,24 +1,19 @@
-import * as THREE from 'three';
+import { Vector3, PerspectiveCamera, AudioListener } from 'three';
 import { gsap } from 'gsap';
 
+// Fonction setupCamera
 export function setupCamera(camera, scene, controls, renderer) {
-    /**
-     * Variables d'état
-     */
+    // Variables d'état
     let scrollEnabled = false;
     let scrollProgress = 0;
     let finalAnimationTriggered = false;
-    let isMuted = false; // État du son (désactivé par défaut)
+    let isMuted = false;
 
-    /**
-     * Points de la trajectoire
-     */
-    const camStart = new THREE.Vector3(0, 1, 8);  // départ
-    const camEnd = new THREE.Vector3(0, 2, -39);   // arrivée
+    // Points de la trajectoire
+    const camStart = new Vector3(0, 1, 8);
+    const camEnd = new Vector3(0, 2, -39);
 
-    /**
-     * Gestion du scroll
-     */
+    // Gestion du scroll
     function updateScrollProgress() {
         const max = document.documentElement.scrollHeight - window.innerHeight;
         if (max > 0) {
@@ -27,58 +22,47 @@ export function setupCamera(camera, scene, controls, renderer) {
     }
     window.addEventListener('scroll', updateScrollProgress, { passive: true });
 
-    /**
-     * Configuration audio avec filtre lowpass
-     */
-    let audioContext;
+    // Configuration audio avec filtre lowpass
+    let audioContext; // Utilise l'API native AudioContext
     let audioSource;
     let filter;
     let gainNode;
 
-    /**
-     * Bouton d'entrée et bouton de son
-     */
+    // Bouton d'entrée et bouton de son
     const overlay = document.querySelector('.overlay');
     const button = document.querySelector('#enter');
     const soundToggleButton = document.querySelector('#toggle-sound');
-    const clickaudio = new Audio('./sounds/musique.mp3');
+    const clickaudio = new Audio('./sounds/musique.mp3'); // Utilise l'API native Audio
 
     // Fonction pour basculer le son
     function toggleSound() {
         if (!audioContext) return;
-
         isMuted = !isMuted;
-
         if (isMuted) {
             gainNode.gain.value = 0;
             soundToggleButton.classList.add('muted');
-
-            // Animation smooth pour redescendre les barres
+            // Animation GSAP pour les barres
             const waves = document.querySelectorAll('.wave');
             waves.forEach((wave, index) => {
                 gsap.to(wave, {
                     height: '2px',
                     duration: 0.5,
-                    delay: index * 0.1, // Décalage progressif pour chaque barre
+                    delay: index * 0.1,
                     ease: "power2.inOut"
                 });
             });
         } else {
             gainNode.gain.value = 0.1 + (0.9 * scrollProgress);
             soundToggleButton.classList.remove('muted');
-
-            // Animation pour faire remonter les barres en vague
+            // Animation GSAP pour les barres
             const waves = document.querySelectorAll('.wave');
             waves.forEach((wave, index) => {
                 gsap.to(wave, {
                     height: '100%',
                     duration: 0.8,
                     delay: index * 0.1,
-                    ease: "elastic.out(1, 0.5)", // Effet "rebond" pour un retour dynamique
-                    onComplete: () => {
-                        // Redémarre l'animation sinusoïdale après la remontée
-                        animateWaves();
-                    }
+                    ease: "elastic.out(1, 0.5)",
+                    onComplete: () => animateWaves(),
                 });
             });
         }
@@ -87,53 +71,46 @@ export function setupCamera(camera, scene, controls, renderer) {
     // Écouteur pour le bouton de son
     if (soundToggleButton) {
         soundToggleButton.addEventListener('click', (e) => {
-            e.stopPropagation(); // Empêche le déclenchement d'autres événements
+            e.stopPropagation();
             toggleSound();
         });
     }
 
+    // Animation des vagues
     function animateWaves() {
-        if (isMuted) return; // Ne pas animer si le son est désactivé
-
+        if (isMuted) return;
         const waves = document.querySelectorAll('.wave');
         const now = Date.now();
-        const frequency = 0.002; // Contrôle la vitesse de l'onde
-
+        const frequency = 0.002;
         waves.forEach((wave, index) => {
-            // Utilise sin() pour créer une courbe lisse
-            const offset = index * 0.5; // Décale chaque barre
-            const height = 5 + 15 * Math.sin(now * frequency + offset); // Hauteur entre 5% et 20%
+            const offset = index * 0.5;
+            const height = 5 + 15 * Math.sin(now * frequency + offset);
             wave.style.height = `${height}px`;
-            wave.style.transform = `scaleY(${height / 20})`; // Ajuste l'échelle
+            wave.style.transform = `scaleY(${height / 20})`;
         });
-
-        requestAnimationFrame(animateWaves); // Boucle d'animation
+        requestAnimationFrame(animateWaves);
     }
 
+    // Écouteur pour le bouton d'entrée
     button.addEventListener('click', () => {
-        // Place la caméra au départ
         camera.position.copy(camStart);
         camera.lookAt(0, 2, 0);
         scrollEnabled = true;
-        controls.enabled = false;  // Désactive les contrôles pendant le scroll
+        controls.enabled = false;
 
         // Animation de l'overlay
         overlay.style.opacity = 0;
         setTimeout(() => {
             overlay.style.display = 'none';
-
-            // Afficher les éléments
             const soundToggleButton = document.querySelector('#toggle-sound');
             const musicCredit = document.querySelector('.music-credit');
             if (soundToggleButton) soundToggleButton.style.display = 'flex';
             if (musicCredit) musicCredit.style.display = 'block';
-
-            // Animer l'apparition
             gsap.from([soundToggleButton, musicCredit], {
                 opacity: 0,
                 y: 20,
                 duration: 0.5,
-                stagger: 0.1, // Décalage entre les animations
+                stagger: 0.1,
                 ease: "power2.out"
             });
         }, 600);
@@ -144,48 +121,35 @@ export function setupCamera(camera, scene, controls, renderer) {
         filter = audioContext.createBiquadFilter();
         gainNode = audioContext.createGain();
 
-        // Configuration du filtre (lowpass fort au début)
+        // Configuration du filtre
         filter.type = "lowpass";
         filter.frequency.value = 200;
         filter.Q.value = 0.5;
-
         audioSource.connect(filter);
         filter.connect(gainNode);
         gainNode.connect(audioContext.destination);
 
         clickaudio.currentTime = 0;
         clickaudio.play().catch(e => console.log("La lecture a échoué :", e));
-
         animateWaves();
     });
 
-    /**
-     * Fonction de mise à jour de la caméra et du filtre audio
-     */
+    // Mise à jour de la caméra et du filtre audio
     function updateCamera() {
         if (scrollEnabled && !finalAnimationTriggered) {
-            // Interpolation linéaire entre camStart et camEnd
             camera.position.lerpVectors(camStart, camEnd, scrollProgress);
-
             if (!isMuted) {
                 gainNode.gain.value = 0.1 + (0.9 * scrollProgress);
             }
-
             if (filter) {
-                const minFreq = 200;      // Fréquence minimale
-                const maxFreq = 22050;    // Fréquence maximale
+                const minFreq = 200;
+                const maxFreq = 22050;
                 filter.frequency.value = minFreq + (maxFreq - minFreq) * scrollProgress;
             }
-
-            // Détecte si on atteint la fin du scroll
             if (scrollProgress >= 1 && !finalAnimationTriggered) {
                 finalAnimationTriggered = true;
-                scrollEnabled = false; // Désactive le scroll pendant l'animation
-
-                // Animation de retour avec GSAP
+                scrollEnabled = false;
                 const timeline = gsap.timeline();
-
-                // Animation de la caméra
                 timeline.to(camera.position, {
                     x: camStart.x,
                     y: camStart.y,
@@ -193,29 +157,22 @@ export function setupCamera(camera, scene, controls, renderer) {
                     duration: 3,
                     ease: "power2.inOut"
                 }, 0);
-
-                // Animation du volume (gain)
                 if (!isMuted) {
                     timeline.to(gainNode.gain, {
-                        value: 0.1, // Retour au volume initial
+                        value: 0.1,
                         duration: 3,
                         ease: "power2.inOut"
                     }, 0);
                 }
-
-                // Animation du filtre (lowpass)
                 timeline.to(filter.frequency, {
-                    value: 200, // Retour à la fréquence initiale
+                    value: 200,
                     duration: 3,
                     ease: "power2.inOut",
                     onComplete: () => {
-                        // Réinitialise le scroll de la page à 0%
                         window.scrollTo({ top: 0, behavior: 'instant' });
-                        // Réinitialise les variables pour permettre un nouveau scroll
                         scrollProgress = 0;
                         finalAnimationTriggered = false;
                         scrollEnabled = true;
-                        // Réactive les contrôles si nécessaire
                         controls.enabled = false;
                     }
                 }, 0);
