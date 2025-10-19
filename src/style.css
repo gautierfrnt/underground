@@ -22,8 +22,6 @@ html {
 body {
     margin: 0;
     height: 2000vh;
-    overflow-x: hidden;
-    overflow-y: auto;
     background: black;
     font-family: 'Arial', sans-serif;
 }

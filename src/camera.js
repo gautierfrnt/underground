@@ -20,7 +20,8 @@ export function setupCamera(camera, scene, controls, renderer) {
             scrollProgress = Math.min(window.scrollY / max, 1);
         }
     }
-    window.addEventListener('scroll', updateScrollProgress, { passive: true });
+    window.addEventListener('scroll', updateScrollProgress, { passive: false });
+    window.addEventListener('touchmove', updateScrollProgress, { passive: false });
 
     // Configuration audio avec filtre lowpass
     let audioContext; // Utilise l'API native AudioContext
