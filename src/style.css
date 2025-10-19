@@ -4,7 +4,6 @@
     src: url('../static/fonts/Gambetta-Italic.woff2') format('woff2');
     font-weight: 400;
     font-style: italic;
-    font-display: swap;
 }
 
 /* Réinitialisation et styles de base */
