@@ -15,7 +15,6 @@
 }
 
 html {
-    overflow-x: hidden;
     scroll-behavior: smooth;
 }
 
@@ -24,6 +23,8 @@ body {
     height: 2000vh;
     background: black;
     font-family: 'Arial', sans-serif;
+    overflow-y: auto;
+    touch-action: pan-y
 }
 
 /* Canvas Three.js */
@@ -35,6 +36,7 @@ body {
     height: 100vh;
     outline: none;
     z-index: 1;
+    pointer-events: none; 
 }
 
 /* Overlay (écran de démarrage) */
